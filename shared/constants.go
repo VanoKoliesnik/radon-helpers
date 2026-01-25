@@ -1,0 +1,6 @@
+package shared
+
+const (
+	DEFAULT_WINDOW_WIDTH  = 1200.0
+	DEFAULT_WINDOW_HEIGHT = 720.0
+)
