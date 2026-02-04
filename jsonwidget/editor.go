@@ -6,6 +6,7 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
 )
 
@@ -43,6 +44,11 @@ func (e *Editor) setListeners() {
 	e.eventBus.On(event_ClearButtonClicked, func(_ any) {
 		e.clear()
 	})
+	e.eventBus.On(event_FormattingError, func(err any) {
+		if err, ok := err.(error); ok {
+			e.showError(err)
+		}
+	})
 }
 
 func (e *Editor) paste() {
@@ -52,6 +58,7 @@ func (e *Editor) paste() {
 func (e *Editor) format() {
 	formattedJson, err := formatter.FormatJson(e.widget.Text)
 	if err != nil {
+		e.eventBus.Emit(event_FormattingError, err)
 		return
 	}
 
@@ -61,6 +68,15 @@ func (e *Editor) format() {
 func (e *Editor) clear() {
 	fyne.Do(func() { e.widget.SetText("") })
 	e.eventBus.Emit(event_TextEdited, "")
+}
+
+func (e *Editor) showError(err error) {
+	fyne.Do(func() {
+		windows := fyne.CurrentApp().Driver().AllWindows()
+		if len(windows) > 0 {
+			dialog.ShowError(err, windows[0])
+		}
+	})
 }
 
 func (e *Editor) getLayout() *container.Scroll {
